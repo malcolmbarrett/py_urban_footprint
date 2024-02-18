@@ -1,0 +1,33 @@
+[project]
+name = "py-urban-footprint"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Malcolm Barrett", email = "malcolmbarrett@gmail.com" }
+]
+dependencies = [
+    "polars>=0.20.9",
+    "seaborn>=0.13.2",
+    "jupyter>=1.0.0",
+    "great_tables>=0.3.0",
+    "setuptools>=69.1.0",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[project.scripts]
+hello = "py_urban_footprint:hello"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/py_urban_footprint"]

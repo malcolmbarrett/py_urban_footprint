@@ -1,0 +1,20 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import polars as pl
+from great_tables import GT, exibble
+crops = pl.read_csv("data/crops.csv", null_values="NA")
+harvest = (crops
+    .group_by("FarmType")
+    .agg(pl.col("Harvested").mean())
+    .sort("Harvested"))
+(
+GT(harvest)
+    .fmt_number(columns=["Harvested"])
+    .cols_label(FarmType="Farm Type", Harvested="Harvested (kg)")
+)
+```
