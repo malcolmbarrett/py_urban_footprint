@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Urban Farm Footprint"
 format: html
 ---
 
@@ -10,4 +10,76 @@ from py_urban_footprint import funs
 from great_tables import GT
 crops = pl.read_csv("data/crops.csv", null_values="NA")
 funs.gt_summarize_harvest(crops)
+```
+
+
+```{python}
+farms = pl.read_csv("data/farms.csv", null_values="NA")
+n_farms = farms.n_unique(subset=["Farm"])
+```
+
+There are `{python} n_farms` in the study.
+
+
+```{python}
+water_use_by_solar = (farms
+    .filter(pl.col("SolarPanels_bin") != "")
+    .group_by(pl.col("SolarPanels_bin"))
+    .agg(
+        pl.col("WaterUse_GWP_2019").mean().alias("water_use"),
+        pl.count().alias("n")
+    ).sort("water_use")
+)
+
+(
+    GT(water_use_by_solar)
+        .fmt_number("water_use")
+        .cols_label(SolarPanels_bin = "Solar Panels", water_use = "Water Use (L)", n = "N")
+)
+```
+
+```{python}
+farm_water_by_size = (farms
+    .filter(pl.col("SolarPanels_bin") != "")
+    .with_columns(
+        pl.col("SizeOfProductionSite").qcut(10, labels=[str(i) for i in range(10)]).alias("size_cat")
+    )
+    .group_by(pl.col("size_cat"))
+    .agg(
+        pl.col("WaterUse_GWP_2019").mean().alias("water_use"),
+        pl.count().alias("n")
+    ).sort("water_use")
+)
+
+(
+    GT(farm_water_by_size)
+    .fmt_number("water_use")
+    .cols_label(size_cat = "Site Size (Quantile)", water_use = "Water Use (L)", n = "N")
+)
+```
+
+
+```{python}
+import seaborn as sns
+plot_data = (
+    farms
+        .filter(
+            pl.col("SolarPanels_bin") != ""
+        )
+        .with_columns(
+            pl.col("SizeOfProductionSite").log(),
+            pl.col("WaterUse_GWP_2019").log(),
+        )
+)
+
+sns.lmplot(
+    data = plot_data,
+    x="SizeOfProductionSite",
+    y="WaterUse_GWP_2019",
+    hue="FarmType",
+    col="FarmType",
+    palette="colorblind",
+    legend="full"
+)
+
 ```
